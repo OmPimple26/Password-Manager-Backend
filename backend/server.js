@@ -118,7 +118,7 @@ async function main() {
     });
 
     // Delete a password
-    app.delete("/api/passwords", async (req, res) => {
+    app.delete("/api/passwords/:id", async (req, res) => {
       const password = req.body;
       const findResult = await collection.deleteOne(password);
       res.send({ success: true, result: findResult });
