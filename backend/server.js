@@ -165,7 +165,7 @@ async function main() {
     const collection = db.collection("passwords");
 
     // Get all passwords
-    app.get("/api/passwords", async (req, res) => {
+    app.get("https://password-manager-backend-c93g.onrender.com/api/passwords", async (req, res) => {
       try {
         const findResult = await collection.find({}).toArray();
         res.json(findResult);
@@ -176,7 +176,7 @@ async function main() {
     });
 
     // Save a password
-    app.post("/api/passwords", async (req, res) => {
+    app.post("https://password-manager-backend-c93g.onrender.com/api/passwords", async (req, res) => {
       try {
         const password = req.body;
         const result = await collection.insertOne(password);
@@ -188,7 +188,7 @@ async function main() {
     });
 
     // Delete a password
-    app.delete("/api/passwords", async (req, res) => {
+    app.delete("https://password-manager-backend-c93g.onrender.com/api/passwords", async (req, res) => {
       try {
         const { id } = req.body;
         const result = await collection.deleteOne({ id });
