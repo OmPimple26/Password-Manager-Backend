@@ -52,6 +52,86 @@
 //     console.log(`Example app listening on port http://localhost:3000/`)
 // })
 
+// const express = require("express");
+// const dotenv = require("dotenv");
+// const { MongoClient } = require("mongodb");
+// const bodyParser = require("body-parser");
+// const cors = require("cors");
+
+// dotenv.config();
+
+// const app = express();
+// const port = process.env.PORT || 3000;
+
+// // Middlewares
+// app.use(bodyParser.json());
+// app.use(
+//   cors({
+//     origin: process.env.FRONTEND_URL, // Only allow your deployed frontend
+//     methods: ["GET", "POST", "DELETE"],
+//   })
+// );
+
+// // MongoDB Atlas Connection
+// const client = new MongoClient(process.env.MONGO_URI);
+// const dbName = "passop";
+
+// async function main() {
+//   try {
+//     await client.connect();
+//     console.log("✅ Connected successfully to MongoDB Atlas");
+
+//     const db = client.db(dbName);
+//     const collection = db.collection("passwords");
+
+//     // // Get all passwords
+//     // app.get('/', async (req, res) => {
+//     //   const findResult = await collection.find({}).toArray();
+//     //   res.json(findResult);
+//     // });
+
+//     // // Save a password
+//     // app.post('/', async (req, res) => {
+//     //   const password = req.body;
+//     //   const findResult = await collection.insertOne(password);
+//     //   res.send({ success: true, result: findResult });
+//     // });
+
+//     // // Delete a password
+//     // app.delete('/', async (req, res) => {
+//     //   const password = req.body;
+//     //   const findResult = await collection.deleteOne(password);
+//     //   res.send({ success: true, result: findResult });
+//     // });
+
+//     app.get('/api/passwords', async (req, res) => {
+//     const findResult = await collection.find({}).toArray();
+//     res.json(findResult);
+//     });
+
+//     app.post('/api/passwords', async (req, res) => {
+//     const password = req.body;
+//     const findResult = await collection.insertOne(password);
+//     res.send({ success: true, result: findResult });
+//     });
+
+//     app.delete('/api/passwords', async (req, res) => {
+//     const password = req.body;
+//     const findResult = await collection.deleteOne(password);
+//     res.send({ success: true, result: findResult });
+//     });
+
+
+//     app.listen(port, () => {
+//       console.log(`🚀 Server running on port ${port}`);
+//     });
+//   } catch (error) {
+//     console.error("❌ Error connecting to MongoDB Atlas:", error);
+//   }
+// }
+
+// main();
+
 const express = require("express");
 const dotenv = require("dotenv");
 const { MongoClient } = require("mongodb");
@@ -63,16 +143,16 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middlewares
+// Middleware
 app.use(bodyParser.json());
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL, // Only allow your deployed frontend
+    origin: process.env.FRONTEND_URL || "*",
     methods: ["GET", "POST", "DELETE"],
   })
 );
 
-// MongoDB Atlas Connection
+// MongoDB setup
 const client = new MongoClient(process.env.MONGO_URI);
 const dbName = "passop";
 
@@ -84,46 +164,42 @@ async function main() {
     const db = client.db(dbName);
     const collection = db.collection("passwords");
 
-    // // Get all passwords
-    // app.get('/', async (req, res) => {
-    //   const findResult = await collection.find({}).toArray();
-    //   res.json(findResult);
-    // });
-
-    // // Save a password
-    // app.post('/', async (req, res) => {
-    //   const password = req.body;
-    //   const findResult = await collection.insertOne(password);
-    //   res.send({ success: true, result: findResult });
-    // });
-
-    // // Delete a password
-    // app.delete('/', async (req, res) => {
-    //   const password = req.body;
-    //   const findResult = await collection.deleteOne(password);
-    //   res.send({ success: true, result: findResult });
-    // });
-
     // Get all passwords
     app.get("/api/passwords", async (req, res) => {
-      const findResult = await collection.find({}).toArray();
-      res.json(findResult);
+      try {
+        const findResult = await collection.find({}).toArray();
+        res.json(findResult);
+      } catch (error) {
+        console.error("❌ Error fetching passwords:", error);
+        res.status(500).json({ error: "Failed to fetch passwords" });
+      }
     });
 
     // Save a password
     app.post("/api/passwords", async (req, res) => {
-      const password = req.body;
-      const findResult = await collection.insertOne(password);
-      res.send({ success: true, result: findResult });
+      try {
+        const password = req.body;
+        const result = await collection.insertOne(password);
+        res.send({ success: true, result });
+      } catch (error) {
+        console.error("❌ Error saving password:", error);
+        res.status(500).json({ error: "Failed to save password" });
+      }
     });
 
     // Delete a password
-    app.delete("/api/passwords/:id", async (req, res) => {
-      const password = req.body;
-      const findResult = await collection.deleteOne(password);
-      res.send({ success: true, result: findResult });
+    app.delete("/api/passwords", async (req, res) => {
+      try {
+        const { id } = req.body;
+        const result = await collection.deleteOne({ id });
+        res.send({ success: true, result });
+      } catch (error) {
+        console.error("❌ Error deleting password:", error);
+        res.status(500).json({ error: "Failed to delete password" });
+      }
     });
 
+    // Start server
     app.listen(port, () => {
       console.log(`🚀 Server running on port ${port}`);
     });
